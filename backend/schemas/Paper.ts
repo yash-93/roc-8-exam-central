@@ -2,7 +2,7 @@ import { file, integer, relationship, select, text } from '@keystone-6/core/fiel
 import { list } from '@keystone-6/core';
 import { allOperations } from '@keystone-6/core/access';
 
-// import { modifyPdf } from '../utils/utils';
+import { modifyPdf } from '../utils/utils';
 // import { slug } from '../utils/slug';
 import { rules, isSignedIn } from './access/paper';
 
@@ -74,15 +74,15 @@ export const Paper = list({
     course: relationship({ ref: 'Course.papers', many: false, isFilterable: true }),
     competitivePaper: relationship({ ref: 'CompetitivePaper.papers' })
   },
-  // hooks: {
-  //   resolveInput: async ({ operation, context, resolvedData }) => {
-  //     if (resolvedData.original.filename)
-  //       resolvedData.source = {
-  //         'mode': 'local',
-  //         ...await modifyPdf(resolvedData.original.filename, context.session?.data?.name)
-  //       }
+  hooks: {
+    resolveInput: async ({ operation, context, resolvedData }) => {
+      if (resolvedData.original.filename)
+        resolvedData.source = {
+          'mode': 'local',
+          ...await modifyPdf(resolvedData.original.filename, context.session?.data?.name)
+        }
 
-  //     return resolvedData
-  //   }
-  // }
+      return resolvedData
+    }
+  }
 })
