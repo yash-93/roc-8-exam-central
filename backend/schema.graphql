@@ -11,6 +11,10 @@ type User {
   role: String
   status: String
   reasonFlagged: String
+  bookmarks(where: PaperWhereInput! = {}, orderBy: [PaperOrderByInput!]! = [], take: Int, skip: Int! = 0): [Paper!]
+  bookmarksCount(where: PaperWhereInput! = {}): Int
+  papers(where: PaperWhereInput! = {}, orderBy: [PaperOrderByInput!]! = [], take: Int, skip: Int! = 0): [Paper!]
+  papersCount(where: PaperWhereInput! = {}): Int
 }
 
 type ImageFieldOutput {
@@ -49,6 +53,8 @@ input UserWhereInput {
   role: StringFilter
   status: StringFilter
   reasonFlagged: StringFilter
+  bookmarks: PaperManyRelationFilter
+  papers: PaperManyRelationFilter
 }
 
 input IDFilter {
@@ -96,6 +102,12 @@ input NestedStringFilter {
   not: NestedStringFilter
 }
 
+input PaperManyRelationFilter {
+  every: PaperWhereInput
+  some: PaperWhereInput
+  none: PaperWhereInput
+}
+
 input UserOrderByInput {
   id: OrderDirection
   name: OrderDirection
@@ -120,6 +132,8 @@ input UserUpdateInput {
   role: String
   status: String
   reasonFlagged: String
+  bookmarks: PaperRelateToManyForUpdateInput
+  papers: PaperRelateToManyForUpdateInput
 }
 
 input ImageFieldInput {
@@ -128,6 +142,13 @@ input ImageFieldInput {
 
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
+
+input PaperRelateToManyForUpdateInput {
+  disconnect: [PaperWhereUniqueInput!]
+  set: [PaperWhereUniqueInput!]
+  create: [PaperCreateInput!]
+  connect: [PaperWhereUniqueInput!]
+}
 
 input UserUpdateArgs {
   where: UserWhereUniqueInput!
@@ -143,6 +164,13 @@ input UserCreateInput {
   role: String
   status: String
   reasonFlagged: String
+  bookmarks: PaperRelateToManyForCreateInput
+  papers: PaperRelateToManyForCreateInput
+}
+
+input PaperRelateToManyForCreateInput {
+  create: [PaperCreateInput!]
+  connect: [PaperWhereUniqueInput!]
 }
 
 type University {
@@ -154,6 +182,8 @@ type University {
   banner: ImageFieldOutput
   logo: ImageFieldOutput
   status: String
+  courses(where: CourseWhereInput! = {}, orderBy: [CourseOrderByInput!]! = [], take: Int, skip: Int! = 0): [Course!]
+  coursesCount(where: CourseWhereInput! = {}): Int
 }
 
 input UniversityWhereUniqueInput {
@@ -170,6 +200,7 @@ input UniversityWhereInput {
   state: StringFilter
   country: StringFilter
   status: StringNullableFilter
+  courses: CourseManyRelationFilter
 }
 
 input StringNullableFilter {
@@ -201,6 +232,12 @@ input NestedStringNullableFilter {
   not: NestedStringNullableFilter
 }
 
+input CourseManyRelationFilter {
+  every: CourseWhereInput
+  some: CourseWhereInput
+  none: CourseWhereInput
+}
+
 input UniversityOrderByInput {
   id: OrderDirection
   name: OrderDirection
@@ -218,6 +255,14 @@ input UniversityUpdateInput {
   banner: ImageFieldInput
   logo: ImageFieldInput
   status: String
+  courses: CourseRelateToManyForUpdateInput
+}
+
+input CourseRelateToManyForUpdateInput {
+  disconnect: [CourseWhereUniqueInput!]
+  set: [CourseWhereUniqueInput!]
+  create: [CourseCreateInput!]
+  connect: [CourseWhereUniqueInput!]
 }
 
 input UniversityUpdateArgs {
@@ -233,6 +278,305 @@ input UniversityCreateInput {
   banner: ImageFieldInput
   logo: ImageFieldInput
   status: String
+  courses: CourseRelateToManyForCreateInput
+}
+
+input CourseRelateToManyForCreateInput {
+  create: [CourseCreateInput!]
+  connect: [CourseWhereUniqueInput!]
+}
+
+type Course {
+  id: ID!
+  name: String
+  status: String
+  courseCode: String
+  duration: Float
+  noOfSemester: Int
+  semesterSystem: String
+  papers(where: PaperWhereInput! = {}, orderBy: [PaperOrderByInput!]! = [], take: Int, skip: Int! = 0): [Paper!]
+  papersCount(where: PaperWhereInput! = {}): Int
+  university: University
+}
+
+input CourseWhereUniqueInput {
+  id: ID
+}
+
+input CourseWhereInput {
+  AND: [CourseWhereInput!]
+  OR: [CourseWhereInput!]
+  NOT: [CourseWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  status: StringNullableFilter
+  courseCode: StringFilter
+  duration: FloatFilter
+  noOfSemester: IntNullableFilter
+  semesterSystem: StringNullableFilter
+  papers: PaperManyRelationFilter
+  university: UniversityWhereInput
+}
+
+input FloatFilter {
+  equals: Float
+  in: [Float!]
+  notIn: [Float!]
+  lt: Float
+  lte: Float
+  gt: Float
+  gte: Float
+  not: FloatFilter
+}
+
+input IntNullableFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntNullableFilter
+}
+
+input CourseOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  status: OrderDirection
+  courseCode: OrderDirection
+  duration: OrderDirection
+  noOfSemester: OrderDirection
+  semesterSystem: OrderDirection
+}
+
+input CourseUpdateInput {
+  name: String
+  status: String
+  courseCode: String
+  duration: Float
+  noOfSemester: Int
+  semesterSystem: String
+  papers: PaperRelateToManyForUpdateInput
+  university: UniversityRelateToOneForUpdateInput
+}
+
+input UniversityRelateToOneForUpdateInput {
+  create: UniversityCreateInput
+  connect: UniversityWhereUniqueInput
+  disconnect: Boolean
+}
+
+input CourseUpdateArgs {
+  where: CourseWhereUniqueInput!
+  data: CourseUpdateInput!
+}
+
+input CourseCreateInput {
+  name: String
+  status: String
+  courseCode: String
+  duration: Float
+  noOfSemester: Int
+  semesterSystem: String
+  papers: PaperRelateToManyForCreateInput
+  university: UniversityRelateToOneForCreateInput
+}
+
+input UniversityRelateToOneForCreateInput {
+  create: UniversityCreateInput
+  connect: UniversityWhereUniqueInput
+}
+
+type Paper {
+  id: ID!
+  name: String
+  paperCode: String
+  year: Int
+  semester: Int
+  uploadedBy: User
+  type: String
+  flag: String
+  status: String
+  isActive: String
+  original: FileFieldOutput
+  source: FileFieldOutput
+  university: University
+  course: Course
+  competitivePaper: CompetitivePaper
+}
+
+type FileFieldOutput {
+  filename: String!
+  filesize: Int!
+  url: String!
+}
+
+input PaperWhereUniqueInput {
+  id: ID
+}
+
+input PaperWhereInput {
+  AND: [PaperWhereInput!]
+  OR: [PaperWhereInput!]
+  NOT: [PaperWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  paperCode: StringFilter
+  year: IntFilter
+  semester: IntNullableFilter
+  uploadedBy: UserWhereInput
+  type: StringNullableFilter
+  flag: StringNullableFilter
+  status: StringNullableFilter
+  isActive: StringNullableFilter
+  university: UniversityWhereInput
+  course: CourseWhereInput
+  competitivePaper: CompetitivePaperWhereInput
+}
+
+input IntFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntFilter
+}
+
+input PaperOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  paperCode: OrderDirection
+  year: OrderDirection
+  semester: OrderDirection
+  type: OrderDirection
+  flag: OrderDirection
+  status: OrderDirection
+  isActive: OrderDirection
+}
+
+input PaperUpdateInput {
+  name: String
+  paperCode: String
+  year: Int
+  semester: Int
+  uploadedBy: UserRelateToOneForUpdateInput
+  type: String
+  flag: String
+  status: String
+  isActive: String
+  original: FileFieldInput
+  source: FileFieldInput
+  university: UniversityRelateToOneForUpdateInput
+  course: CourseRelateToOneForUpdateInput
+  competitivePaper: CompetitivePaperRelateToOneForUpdateInput
+}
+
+input UserRelateToOneForUpdateInput {
+  create: UserCreateInput
+  connect: UserWhereUniqueInput
+  disconnect: Boolean
+}
+
+input FileFieldInput {
+  upload: Upload!
+}
+
+input CourseRelateToOneForUpdateInput {
+  create: CourseCreateInput
+  connect: CourseWhereUniqueInput
+  disconnect: Boolean
+}
+
+input CompetitivePaperRelateToOneForUpdateInput {
+  create: CompetitivePaperCreateInput
+  connect: CompetitivePaperWhereUniqueInput
+  disconnect: Boolean
+}
+
+input PaperUpdateArgs {
+  where: PaperWhereUniqueInput!
+  data: PaperUpdateInput!
+}
+
+input PaperCreateInput {
+  name: String
+  paperCode: String
+  year: Int
+  semester: Int
+  uploadedBy: UserRelateToOneForCreateInput
+  type: String
+  flag: String
+  status: String
+  isActive: String
+  original: FileFieldInput
+  source: FileFieldInput
+  university: UniversityRelateToOneForCreateInput
+  course: CourseRelateToOneForCreateInput
+  competitivePaper: CompetitivePaperRelateToOneForCreateInput
+}
+
+input UserRelateToOneForCreateInput {
+  create: UserCreateInput
+  connect: UserWhereUniqueInput
+}
+
+input CourseRelateToOneForCreateInput {
+  create: CourseCreateInput
+  connect: CourseWhereUniqueInput
+}
+
+input CompetitivePaperRelateToOneForCreateInput {
+  create: CompetitivePaperCreateInput
+  connect: CompetitivePaperWhereUniqueInput
+}
+
+type CompetitivePaper {
+  id: ID!
+  name: String
+  slug: String
+  papers(where: PaperWhereInput! = {}, orderBy: [PaperOrderByInput!]! = [], take: Int, skip: Int! = 0): [Paper!]
+  papersCount(where: PaperWhereInput! = {}): Int
+}
+
+input CompetitivePaperWhereUniqueInput {
+  id: ID
+}
+
+input CompetitivePaperWhereInput {
+  AND: [CompetitivePaperWhereInput!]
+  OR: [CompetitivePaperWhereInput!]
+  NOT: [CompetitivePaperWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  slug: StringFilter
+  papers: PaperManyRelationFilter
+}
+
+input CompetitivePaperOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  slug: OrderDirection
+}
+
+input CompetitivePaperUpdateInput {
+  name: String
+  slug: String
+  papers: PaperRelateToManyForUpdateInput
+}
+
+input CompetitivePaperUpdateArgs {
+  where: CompetitivePaperWhereUniqueInput!
+  data: CompetitivePaperUpdateInput!
+}
+
+input CompetitivePaperCreateInput {
+  name: String
+  slug: String
+  papers: PaperRelateToManyForCreateInput
 }
 
 """
@@ -253,6 +597,24 @@ type Mutation {
   updateUniversities(data: [UniversityUpdateArgs!]!): [University]
   deleteUniversity(where: UniversityWhereUniqueInput!): University
   deleteUniversities(where: [UniversityWhereUniqueInput!]!): [University]
+  createCourse(data: CourseCreateInput!): Course
+  createCourses(data: [CourseCreateInput!]!): [Course]
+  updateCourse(where: CourseWhereUniqueInput!, data: CourseUpdateInput!): Course
+  updateCourses(data: [CourseUpdateArgs!]!): [Course]
+  deleteCourse(where: CourseWhereUniqueInput!): Course
+  deleteCourses(where: [CourseWhereUniqueInput!]!): [Course]
+  createPaper(data: PaperCreateInput!): Paper
+  createPapers(data: [PaperCreateInput!]!): [Paper]
+  updatePaper(where: PaperWhereUniqueInput!, data: PaperUpdateInput!): Paper
+  updatePapers(data: [PaperUpdateArgs!]!): [Paper]
+  deletePaper(where: PaperWhereUniqueInput!): Paper
+  deletePapers(where: [PaperWhereUniqueInput!]!): [Paper]
+  createCompetitivePaper(data: CompetitivePaperCreateInput!): CompetitivePaper
+  createCompetitivePapers(data: [CompetitivePaperCreateInput!]!): [CompetitivePaper]
+  updateCompetitivePaper(where: CompetitivePaperWhereUniqueInput!, data: CompetitivePaperUpdateInput!): CompetitivePaper
+  updateCompetitivePapers(data: [CompetitivePaperUpdateArgs!]!): [CompetitivePaper]
+  deleteCompetitivePaper(where: CompetitivePaperWhereUniqueInput!): CompetitivePaper
+  deleteCompetitivePapers(where: [CompetitivePaperWhereUniqueInput!]!): [CompetitivePaper]
   endSession: Boolean!
   authenticateUserWithPassword(email: String!, password: String!): UserAuthenticationWithPasswordResult
   createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
@@ -282,6 +644,15 @@ type Query {
   universities(where: UniversityWhereInput! = {}, orderBy: [UniversityOrderByInput!]! = [], take: Int, skip: Int! = 0): [University!]
   university(where: UniversityWhereUniqueInput!): University
   universitiesCount(where: UniversityWhereInput! = {}): Int
+  courses(where: CourseWhereInput! = {}, orderBy: [CourseOrderByInput!]! = [], take: Int, skip: Int! = 0): [Course!]
+  course(where: CourseWhereUniqueInput!): Course
+  coursesCount(where: CourseWhereInput! = {}): Int
+  papers(where: PaperWhereInput! = {}, orderBy: [PaperOrderByInput!]! = [], take: Int, skip: Int! = 0): [Paper!]
+  paper(where: PaperWhereUniqueInput!): Paper
+  papersCount(where: PaperWhereInput! = {}): Int
+  competitivePapers(where: CompetitivePaperWhereInput! = {}, orderBy: [CompetitivePaperOrderByInput!]! = [], take: Int, skip: Int! = 0): [CompetitivePaper!]
+  competitivePaper(where: CompetitivePaperWhereUniqueInput!): CompetitivePaper
+  competitivePapersCount(where: CompetitivePaperWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }

@@ -1,26 +1,28 @@
-import { image, relationship, select, text } from "@keystone-6/core/fields";
-import { list } from "@keystone-6/core";
-import { slug } from '../utils/slug';
-// import { rules, isSignedIn } from './access/university';
-import { allowAll } from "@keystone-6/core/access";
+import { image, relationship, select, text } from '@keystone-6/core/fields';
+import { list } from '@keystone-6/core';
+import { allOperations } from '@keystone-6/core/access';
+
+// import { slug } from '../utils/slug';
+import { rules, isSignedIn } from './access/university';
 
 export const University = list({
-  // access: {
-  //   operation: {
-  //     query: () => true,
-  //   },
-  //   filter: {
-  //     query: rules.universitiesFilter
-  //   },
-  //   item: {
-  //     create: isSignedIn,
-  //     update: rules.canUpdateUniversities,
-  //     delete: rules.canDeleteUniversities
-  //   }
-  // },
-  access: allowAll,
+  access: {
+    operation: {
+      ...allOperations(isSignedIn),
+      query: () => true
+    },
+    filter: {
+      query: rules.universitiesFilter
+    },
+    item: {
+      create: isSignedIn,
+      update: rules.canUpdateUniversities,
+      delete: rules.canDeleteUniversities
+    }
+  },
   fields: {
     name: text({ validation: { isRequired: true }, isFilterable: true }),
+    // slug: slug(),
     city: text({ validation: { isRequired: true } }),
     state: text({ validation: { isRequired: true } }),
     country: text({ validation: { isRequired: true } }),
@@ -35,6 +37,6 @@ export const University = list({
         displayMode: 'segmented-control',
       },
     }),
-    // courses: relationship({ ref: "Course.university", many: true })
+    courses: relationship({ ref: 'Course.university', many: true })
   }
 })

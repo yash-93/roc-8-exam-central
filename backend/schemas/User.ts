@@ -1,4 +1,4 @@
-import { image, password, text, select } from "@keystone-6/core/fields";
+import { image, password, relationship, text, select } from '@keystone-6/core/fields';
 import { list } from '@keystone-6/core';
 import { allowAll } from '@keystone-6/core/access';
 
@@ -17,29 +17,31 @@ export const User = list({
     role: select({
       validation: { isRequired: true },
       options: [
-        { label: "Admin", value: "admin" },
-        { label: "Moderator", value: "moderator" },
-        { label: "Regular", value: "regular" },
-        { label: "Viewer", value: "viewer" }
+        { label: 'Admin', value: 'admin' },
+        { label: 'Moderator', value: 'moderator' },
+        { label: 'Regular', value: 'regular' },
+        { label: 'Viewer', value: 'viewer' }
       ],
-      defaultValue: "regular",
+      defaultValue: 'regular',
       ui: {
-        displayMode: "segmented-control",
+        displayMode: 'segmented-control',
       }
     }),
     status: select({
       validation: { isRequired: true },
       options: [
-        { label: "Active", value: "active" },
-        { label: "Flagged", value: "flagged" },
-        { label: "Suspended", value: "suspended" }
+        { label: 'Active', value: 'active' },
+        { label: 'Flagged', value: 'flagged' },
+        { label: 'Suspended', value: 'suspended' }
       ],
-      defaultValue: "active",
+      defaultValue: 'active',
       ui: {
-        displayMode: "segmented-control",
+        displayMode: 'segmented-control',
       }
     }),
-    reasonFlagged: text()
+    reasonFlagged: text(),
+    bookmarks: relationship({ ref: 'Paper', many: true }),
+    papers: relationship({ ref: 'Paper.uploadedBy', many: true })
   },
   access: allowAll
 })

@@ -29,7 +29,7 @@ __export(keystone_exports, {
   default: () => keystone_default
 });
 module.exports = __toCommonJS(keystone_exports);
-var import_core3 = require("@keystone-6/core");
+var import_core6 = require("@keystone-6/core");
 var import_dotenv = __toESM(require("dotenv"));
 var import_session = require("@keystone-6/core/session");
 var import_auth = require("@keystone-6/auth");
@@ -75,7 +75,9 @@ var User = (0, import_core.list)({
         displayMode: "segmented-control"
       }
     }),
-    reasonFlagged: (0, import_fields.text)()
+    reasonFlagged: (0, import_fields.text)(),
+    bookmarks: (0, import_fields.relationship)({ ref: "Paper", many: true }),
+    papers: (0, import_fields.relationship)({ ref: "Paper.uploadedBy", many: true })
   },
   access: import_access.allowAll
 });
@@ -84,8 +86,54 @@ var User = (0, import_core.list)({
 var import_fields2 = require("@keystone-6/core/fields");
 var import_core2 = require("@keystone-6/core");
 var import_access2 = require("@keystone-6/core/access");
+
+// schemas/access/university.ts
+function isSignedIn({ session: session2 }) {
+  return !!session2;
+}
+var rules = {
+  universitiesFilter({ session: session2 }) {
+    if (!isSignedIn({ session: session2 })) {
+      return { status: { equals: "published" } };
+    }
+    return {
+      OR: [
+        {
+          status: { equals: "published" }
+        }
+      ]
+    };
+  },
+  canUpdateUniversities({ session: session2 }) {
+    if (!isSignedIn({ session: session2 })) {
+      return false;
+    }
+    return session2?.data.role === "admin" || session2?.data.role === "moderator";
+  },
+  canDeleteUniversities({ session: session2 }) {
+    if (!isSignedIn({ session: session2 })) {
+      return false;
+    }
+    return session2?.data.role === "admin" || session2?.data.role === "moderator";
+  }
+};
+
+// schemas/University.ts
 var University = (0, import_core2.list)({
-  access: import_access2.allowAll,
+  access: {
+    operation: {
+      ...(0, import_access2.allOperations)(isSignedIn),
+      query: () => true
+    },
+    filter: {
+      query: rules.universitiesFilter
+    },
+    item: {
+      create: isSignedIn,
+      update: rules.canUpdateUniversities,
+      delete: rules.canDeleteUniversities
+    }
+  },
   fields: {
     name: (0, import_fields2.text)({ validation: { isRequired: true }, isFilterable: true }),
     city: (0, import_fields2.text)({ validation: { isRequired: true } }),
@@ -101,14 +149,226 @@ var University = (0, import_core2.list)({
       ui: {
         displayMode: "segmented-control"
       }
-    })
+    }),
+    courses: (0, import_fields2.relationship)({ ref: "Course.university", many: true })
+  }
+});
+
+// schemas/Course.ts
+var import_fields3 = require("@keystone-6/core/fields");
+var import_core3 = require("@keystone-6/core");
+var import_access3 = require("@keystone-6/core/access");
+
+// schemas/access/course.ts
+function isSignedIn2({ session: session2 }) {
+  return !!session2;
+}
+var rules2 = {
+  canReadCourses({ session: session2 }) {
+    if (!isSignedIn2({ session: session2 })) {
+      return { status: { equals: "published" } };
+    }
+    return {
+      OR: [
+        {
+          status: { equals: "published" }
+        }
+      ]
+    };
+  },
+  canUpdateCourses({ session: session2 }) {
+    if (!isSignedIn2({ session: session2 })) {
+      return false;
+    }
+    return session2?.data.role === "admin" || session2?.data.role === "moderator";
+  },
+  canDeleteCourses({ session: session2 }) {
+    if (!isSignedIn2({ session: session2 })) {
+      return false;
+    }
+    return session2?.data.role === "admin" || session2?.data.role === "moderator";
+  }
+};
+
+// schemas/Course.ts
+var Course = (0, import_core3.list)({
+  access: {
+    operation: {
+      ...(0, import_access3.allOperations)(isSignedIn2),
+      query: () => true
+    },
+    filter: {
+      query: rules2.canReadCourses
+    },
+    item: {
+      create: isSignedIn2,
+      update: rules2.canUpdateCourses,
+      delete: rules2.canDeleteCourses
+    }
+  },
+  fields: {
+    name: (0, import_fields3.text)({ validation: { isRequired: true }, isFilterable: true }),
+    status: (0, import_fields3.select)({
+      options: [
+        { label: "Published", value: "published" },
+        { label: "Draft", value: "draft" }
+      ],
+      ui: {
+        displayMode: "segmented-control"
+      }
+    }),
+    courseCode: (0, import_fields3.text)({ validation: { isRequired: true } }),
+    duration: (0, import_fields3.float)({ validation: { isRequired: true } }),
+    noOfSemester: (0, import_fields3.integer)(),
+    semesterSystem: (0, import_fields3.select)({
+      options: [
+        { label: "Annual", value: "1" },
+        { label: "Semester", value: "2" },
+        { label: "Trimester", value: "3" },
+        { label: "Quarter Semester", value: "4" }
+      ],
+      defaultValue: "2"
+    }),
+    papers: (0, import_fields3.relationship)({ ref: "Paper.course", many: true }),
+    university: (0, import_fields3.relationship)({ ref: "University.courses", many: false, isFilterable: true })
+  }
+});
+
+// schemas/Paper.ts
+var import_fields4 = require("@keystone-6/core/fields");
+var import_core4 = require("@keystone-6/core");
+var import_access4 = require("@keystone-6/core/access");
+
+// schemas/access/paper.ts
+function isSignedIn3({ session: session2 }) {
+  return !!session2;
+}
+var rules3 = {
+  papersQueryFilter({ session: session2 }) {
+    if (!isSignedIn3({ session: session2 })) {
+      return { status: { equals: "published" } };
+    }
+    return {
+      OR: [
+        {
+          uploadedBy: { id: { equals: session2?.itemId } }
+        },
+        {
+          status: { equals: "published" }
+        }
+      ]
+    };
+  },
+  papersUpdateFilter({ session: session2 }) {
+    return { uploadedBy: { equals: { id: session2?.itemId } } };
+  },
+  canUpdatePapers({ session: session2 }) {
+    if (!isSignedIn3({ session: session2 })) {
+      return false;
+    }
+    if (session2?.data.role === "admin" || session2?.data.role === "moderator") {
+      return true;
+    }
+    return false;
+  },
+  canDeletePapers({ session: session2 }) {
+    if (!isSignedIn3({ session: session2 })) {
+      return false;
+    }
+    return session2?.data.role === "admin" || session2?.data.role === "moderator";
+  }
+};
+
+// schemas/Paper.ts
+var Paper = (0, import_core4.list)({
+  access: {
+    operation: {
+      ...(0, import_access4.allOperations)(isSignedIn3),
+      query: () => true
+    },
+    filter: {
+      query: rules3.papersQueryFilter,
+      update: rules3.papersUpdateFilter
+    },
+    item: {
+      create: isSignedIn3,
+      update: rules3.canUpdatePapers,
+      delete: rules3.canDeletePapers
+    }
+  },
+  fields: {
+    name: (0, import_fields4.text)({ validation: { isRequired: true } }),
+    paperCode: (0, import_fields4.text)({ validation: { isRequired: true } }),
+    year: (0, import_fields4.integer)({ validation: { isRequired: true }, isOrderable: true, isFilterable: true }),
+    semester: (0, import_fields4.integer)({ isFilterable: true }),
+    uploadedBy: (0, import_fields4.relationship)({ ref: "User.papers", many: false }),
+    type: (0, import_fields4.select)({
+      options: [
+        { label: "University", value: "university" },
+        { label: "Competitive", value: "competitive" }
+      ],
+      defaultValue: "university",
+      ui: {
+        displayMode: "segmented-control"
+      }
+    }),
+    flag: (0, import_fields4.select)({
+      options: [
+        { label: "None", value: "none" },
+        { label: "Duplicate", value: "duplicate" },
+        { label: "Spam/Junk", value: "spam" },
+        { label: "Inconsistant", value: "inconsistant" }
+      ],
+      defaultValue: "none"
+    }),
+    status: (0, import_fields4.select)({
+      options: [
+        { label: "Published", value: "published" },
+        { label: "Draft", value: "draft" }
+      ],
+      defaultValue: "draft",
+      ui: {
+        displayMode: "segmented-control"
+      }
+    }),
+    isActive: (0, import_fields4.select)({
+      options: [
+        { label: "Active", value: "active" },
+        { label: "Inactive", value: "inactive" }
+      ],
+      defaultValue: "active",
+      ui: {
+        displayMode: "segmented-control"
+      }
+    }),
+    original: (0, import_fields4.file)({ storage: "localFiles" }),
+    source: (0, import_fields4.file)({ storage: "localFiles" }),
+    university: (0, import_fields4.relationship)({ ref: "University", many: false, isFilterable: true }),
+    course: (0, import_fields4.relationship)({ ref: "Course.papers", many: false, isFilterable: true }),
+    competitivePaper: (0, import_fields4.relationship)({ ref: "CompetitivePaper.papers" })
+  }
+});
+
+// schemas/CompetitivePaper.ts
+var import_fields5 = require("@keystone-6/core/fields");
+var import_core5 = require("@keystone-6/core");
+var import_access5 = require("@keystone-6/core/access");
+var CompetitivePaper = (0, import_core5.list)({
+  access: import_access5.allowAll,
+  fields: {
+    name: (0, import_fields5.text)({ validation: { isRequired: true } }),
+    slug: (0, import_fields5.text)({ isFilterable: true }),
+    papers: (0, import_fields5.relationship)({ ref: "Paper.competitivePaper", many: true, isFilterable: true })
   }
 });
 
 // schemas/index.ts
 var lists = {
   User,
-  University
+  University,
+  Course,
+  Paper,
+  CompetitivePaper
 };
 
 // keystone.ts
@@ -138,7 +398,7 @@ var session = (0, import_session.statelessSessions)({
   secret: sessionSecret
 });
 var keystone_default = withAuth(
-  (0, import_core3.config)({
+  (0, import_core6.config)({
     db: {
       provider: "postgresql",
       url: process.env.DATABASE_URL || "",
