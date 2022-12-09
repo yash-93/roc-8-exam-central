@@ -83,9 +83,27 @@ var User = (0, import_core.list)({
 });
 
 // schemas/University.ts
-var import_fields2 = require("@keystone-6/core/fields");
+var import_fields3 = require("@keystone-6/core/fields");
 var import_core2 = require("@keystone-6/core");
 var import_access2 = require("@keystone-6/core/access");
+
+// utils/slug.ts
+var import_fields2 = require("@keystone-6/core/fields");
+var import_nanoid = require("nanoid");
+function slug() {
+  const alphabet = "0123456789abcdefghijklmnopqrstuvwxyz";
+  const nanoid = (0, import_nanoid.customAlphabet)(alphabet, 6);
+  return (0, import_fields2.text)({
+    hooks: {
+      resolveInput: ({ inputData }) => {
+        let input = inputData?.name || inputData?.title || "new-item";
+        input = input.trim().toLowerCase().replace(/[^\w ]+/g, "").replace(/ +/g, "-") ?? "";
+        return input + nanoid();
+      }
+    },
+    ui: { createView: { fieldMode: "hidden" } }
+  });
+}
 
 // schemas/access/university.ts
 function isSignedIn({ session: session2 }) {
@@ -135,13 +153,14 @@ var University = (0, import_core2.list)({
     }
   },
   fields: {
-    name: (0, import_fields2.text)({ validation: { isRequired: true }, isFilterable: true }),
-    city: (0, import_fields2.text)({ validation: { isRequired: true } }),
-    state: (0, import_fields2.text)({ validation: { isRequired: true } }),
-    country: (0, import_fields2.text)({ validation: { isRequired: true } }),
-    banner: (0, import_fields2.image)({ storage: "localImages" }),
-    logo: (0, import_fields2.image)({ storage: "localImages" }),
-    status: (0, import_fields2.select)({
+    name: (0, import_fields3.text)({ validation: { isRequired: true }, isFilterable: true }),
+    slug: slug(),
+    city: (0, import_fields3.text)({ validation: { isRequired: true } }),
+    state: (0, import_fields3.text)({ validation: { isRequired: true } }),
+    country: (0, import_fields3.text)({ validation: { isRequired: true } }),
+    banner: (0, import_fields3.image)({ storage: "localImages" }),
+    logo: (0, import_fields3.image)({ storage: "localImages" }),
+    status: (0, import_fields3.select)({
       options: [
         { label: "Published", value: "published" },
         { label: "Draft", value: "draft" }
@@ -150,12 +169,12 @@ var University = (0, import_core2.list)({
         displayMode: "segmented-control"
       }
     }),
-    courses: (0, import_fields2.relationship)({ ref: "Course.university", many: true })
+    courses: (0, import_fields3.relationship)({ ref: "Course.university", many: true })
   }
 });
 
 // schemas/Course.ts
-var import_fields3 = require("@keystone-6/core/fields");
+var import_fields4 = require("@keystone-6/core/fields");
 var import_core3 = require("@keystone-6/core");
 var import_access3 = require("@keystone-6/core/access");
 
@@ -207,8 +226,9 @@ var Course = (0, import_core3.list)({
     }
   },
   fields: {
-    name: (0, import_fields3.text)({ validation: { isRequired: true }, isFilterable: true }),
-    status: (0, import_fields3.select)({
+    name: (0, import_fields4.text)({ validation: { isRequired: true }, isFilterable: true }),
+    slug: slug(),
+    status: (0, import_fields4.select)({
       options: [
         { label: "Published", value: "published" },
         { label: "Draft", value: "draft" }
@@ -217,10 +237,10 @@ var Course = (0, import_core3.list)({
         displayMode: "segmented-control"
       }
     }),
-    courseCode: (0, import_fields3.text)({ validation: { isRequired: true } }),
-    duration: (0, import_fields3.float)({ validation: { isRequired: true } }),
-    noOfSemester: (0, import_fields3.integer)(),
-    semesterSystem: (0, import_fields3.select)({
+    courseCode: (0, import_fields4.text)({ validation: { isRequired: true } }),
+    duration: (0, import_fields4.float)({ validation: { isRequired: true } }),
+    noOfSemester: (0, import_fields4.integer)(),
+    semesterSystem: (0, import_fields4.select)({
       options: [
         { label: "Annual", value: "1" },
         { label: "Semester", value: "2" },
@@ -229,15 +249,111 @@ var Course = (0, import_core3.list)({
       ],
       defaultValue: "2"
     }),
-    papers: (0, import_fields3.relationship)({ ref: "Paper.course", many: true }),
-    university: (0, import_fields3.relationship)({ ref: "University.courses", many: false, isFilterable: true })
+    papers: (0, import_fields4.relationship)({ ref: "Paper.course", many: true }),
+    university: (0, import_fields4.relationship)({ ref: "University.courses", many: false, isFilterable: true })
   }
 });
 
 // schemas/Paper.ts
-var import_fields4 = require("@keystone-6/core/fields");
+var import_fields5 = require("@keystone-6/core/fields");
 var import_core4 = require("@keystone-6/core");
 var import_access4 = require("@keystone-6/core/access");
+
+// utils/utils.ts
+var import_pdf_lib = require("pdf-lib");
+var import_uuid = require("uuid");
+var fs = require("fs");
+var path = require("path");
+async function modifyPdf(fileName, username) {
+  const brandText = "EXAM CENTRAL";
+  const nameText = `By ${username}`;
+  const originalPdf = await readFileFromLocal(fileName);
+  const pdfDoc = await import_pdf_lib.PDFDocument.load(originalPdf);
+  const helveticaFont = await pdfDoc.embedFont(import_pdf_lib.StandardFonts.Helvetica);
+  const pages = pdfDoc.getPages();
+  pages.forEach((page) => {
+    const { width, height } = page.getSize();
+    let textSize = 50;
+    let textWidth = helveticaFont.widthOfTextAtSize(brandText, textSize);
+    page.drawText(brandText, {
+      x: width - textWidth,
+      y: Math.sqrt(3) * (width - textWidth / 2) / 2 - textSize,
+      size: textSize,
+      font: helveticaFont,
+      color: (0, import_pdf_lib.rgb)(0.16, 0.16, 0.16),
+      opacity: 0.2,
+      rotate: (0, import_pdf_lib.degrees)(55)
+    });
+    textWidth = helveticaFont.widthOfTextAtSize(nameText, textSize);
+    page.drawText(nameText, {
+      x: width - textWidth - textSize / 2,
+      y: Math.sqrt(3) * (width - textWidth / 2) / 2 - 2 * textSize,
+      size: textSize,
+      font: helveticaFont,
+      color: (0, import_pdf_lib.rgb)(0.16, 0.16, 0.16),
+      opacity: 0.2,
+      rotate: (0, import_pdf_lib.degrees)(55)
+    });
+    textSize = 30;
+    textWidth = helveticaFont.widthOfTextAtSize(brandText, textSize);
+    page.drawText(brandText, {
+      x: (width - textWidth) / 3,
+      y: (Math.sqrt(3) * (width - textWidth / 2) / 2 - textSize) * 1.5,
+      size: textSize,
+      font: helveticaFont,
+      color: (0, import_pdf_lib.rgb)(0.16, 0.16, 0.16),
+      opacity: 0.2,
+      rotate: (0, import_pdf_lib.degrees)(55)
+    });
+    textWidth = helveticaFont.widthOfTextAtSize(nameText, textSize);
+    page.drawText(nameText, {
+      x: (width - textWidth + textSize) / 3,
+      y: (Math.sqrt(3) * (width - textWidth / 2) / 2 - 2 * textSize) * 1.5,
+      size: textSize,
+      font: helveticaFont,
+      color: (0, import_pdf_lib.rgb)(0.16, 0.16, 0.16),
+      opacity: 0.2,
+      rotate: (0, import_pdf_lib.degrees)(55)
+    });
+    textSize = 30;
+    textWidth = helveticaFont.widthOfTextAtSize(brandText, textSize);
+    page.drawText(brandText, {
+      x: width - textWidth - textSize / 2,
+      y: (Math.sqrt(3) * (width - textWidth / 2) / 2 - textSize) / 4,
+      size: textSize,
+      font: helveticaFont,
+      color: (0, import_pdf_lib.rgb)(0.16, 0.16, 0.16),
+      opacity: 0.2,
+      rotate: (0, import_pdf_lib.degrees)(55)
+    });
+    textWidth = helveticaFont.widthOfTextAtSize(nameText, textSize);
+    page.drawText(nameText, {
+      x: width - textWidth - textSize,
+      y: (Math.sqrt(3) * (width - textWidth / 2) / 2 - 2 * textSize) / 4,
+      size: textSize,
+      font: helveticaFont,
+      color: (0, import_pdf_lib.rgb)(0.16, 0.16, 0.16),
+      opacity: 0.2,
+      rotate: (0, import_pdf_lib.degrees)(55)
+    });
+  });
+  const pdfBytes = await pdfDoc.save();
+  return await writeFileToLocal(pdfBytes);
+}
+async function readFileFromLocal(filename) {
+  const filepath = path.join(process.cwd(), "public/files", filename);
+  return fs.readFileSync(filepath);
+}
+async function writeFileToLocal(pdfBytes) {
+  const filename = `modify-${(0, import_uuid.v4)()}.pdf`;
+  const filepath = path.join(process.cwd(), "public/files", filename);
+  fs.writeFileSync(filepath, pdfBytes);
+  const filesize = fs.statSync(filepath).size;
+  return {
+    filename,
+    filesize
+  };
+}
 
 // schemas/access/paper.ts
 function isSignedIn3({ session: session2 }) {
@@ -297,12 +413,13 @@ var Paper = (0, import_core4.list)({
     }
   },
   fields: {
-    name: (0, import_fields4.text)({ validation: { isRequired: true } }),
-    paperCode: (0, import_fields4.text)({ validation: { isRequired: true } }),
-    year: (0, import_fields4.integer)({ validation: { isRequired: true }, isOrderable: true, isFilterable: true }),
-    semester: (0, import_fields4.integer)({ isFilterable: true }),
-    uploadedBy: (0, import_fields4.relationship)({ ref: "User.papers", many: false }),
-    type: (0, import_fields4.select)({
+    name: (0, import_fields5.text)({ validation: { isRequired: true } }),
+    slug: slug(),
+    paperCode: (0, import_fields5.text)({ validation: { isRequired: true } }),
+    year: (0, import_fields5.integer)({ validation: { isRequired: true }, isOrderable: true, isFilterable: true }),
+    semester: (0, import_fields5.integer)({ isFilterable: true }),
+    uploadedBy: (0, import_fields5.relationship)({ ref: "User.papers", many: false }),
+    type: (0, import_fields5.select)({
       options: [
         { label: "University", value: "university" },
         { label: "Competitive", value: "competitive" }
@@ -312,7 +429,7 @@ var Paper = (0, import_core4.list)({
         displayMode: "segmented-control"
       }
     }),
-    flag: (0, import_fields4.select)({
+    flag: (0, import_fields5.select)({
       options: [
         { label: "None", value: "none" },
         { label: "Duplicate", value: "duplicate" },
@@ -321,7 +438,7 @@ var Paper = (0, import_core4.list)({
       ],
       defaultValue: "none"
     }),
-    status: (0, import_fields4.select)({
+    status: (0, import_fields5.select)({
       options: [
         { label: "Published", value: "published" },
         { label: "Draft", value: "draft" }
@@ -331,7 +448,7 @@ var Paper = (0, import_core4.list)({
         displayMode: "segmented-control"
       }
     }),
-    isActive: (0, import_fields4.select)({
+    isActive: (0, import_fields5.select)({
       options: [
         { label: "Active", value: "active" },
         { label: "Inactive", value: "inactive" }
@@ -341,24 +458,34 @@ var Paper = (0, import_core4.list)({
         displayMode: "segmented-control"
       }
     }),
-    original: (0, import_fields4.file)({ storage: "localFiles" }),
-    source: (0, import_fields4.file)({ storage: "localFiles" }),
-    university: (0, import_fields4.relationship)({ ref: "University", many: false, isFilterable: true }),
-    course: (0, import_fields4.relationship)({ ref: "Course.papers", many: false, isFilterable: true }),
-    competitivePaper: (0, import_fields4.relationship)({ ref: "CompetitivePaper.papers" })
+    original: (0, import_fields5.file)({ storage: "localFiles" }),
+    source: (0, import_fields5.file)({ storage: "localFiles" }),
+    university: (0, import_fields5.relationship)({ ref: "University", many: false, isFilterable: true }),
+    course: (0, import_fields5.relationship)({ ref: "Course.papers", many: false, isFilterable: true }),
+    competitivePaper: (0, import_fields5.relationship)({ ref: "CompetitivePaper.papers" })
+  },
+  hooks: {
+    resolveInput: async ({ operation, context, resolvedData }) => {
+      if (resolvedData.original.filename)
+        resolvedData.source = {
+          "mode": "local",
+          ...await modifyPdf(resolvedData.original.filename, context.session?.data?.name)
+        };
+      return resolvedData;
+    }
   }
 });
 
 // schemas/CompetitivePaper.ts
-var import_fields5 = require("@keystone-6/core/fields");
+var import_fields6 = require("@keystone-6/core/fields");
 var import_core5 = require("@keystone-6/core");
 var import_access5 = require("@keystone-6/core/access");
 var CompetitivePaper = (0, import_core5.list)({
   access: import_access5.allowAll,
   fields: {
-    name: (0, import_fields5.text)({ validation: { isRequired: true } }),
-    slug: (0, import_fields5.text)({ isFilterable: true }),
-    papers: (0, import_fields5.relationship)({ ref: "Paper.competitivePaper", many: true, isFilterable: true })
+    name: (0, import_fields6.text)({ validation: { isRequired: true } }),
+    slug: (0, import_fields6.text)({ isFilterable: true }),
+    papers: (0, import_fields6.relationship)({ ref: "Paper.competitivePaper", many: true, isFilterable: true })
   }
 });
 
@@ -422,7 +549,7 @@ var keystone_default = withAuth(
       localImages: {
         kind: "local",
         type: "image",
-        generateUrl: (path) => `http://localhost:3000/images${path}`,
+        generateUrl: (path2) => `http://localhost:3000/images${path2}`,
         serverRoute: {
           path: "/images"
         },
@@ -431,7 +558,7 @@ var keystone_default = withAuth(
       localFiles: {
         kind: "local",
         type: "file",
-        generateUrl: (path) => `http://localhost:3000/files${path}`,
+        generateUrl: (path2) => `http://localhost:3000/files${path2}`,
         serverRoute: {
           path: "/files"
         },

@@ -3,7 +3,7 @@ import { list } from '@keystone-6/core';
 import { allOperations } from '@keystone-6/core/access';
 
 import { modifyPdf } from '../utils/utils';
-// import { slug } from '../utils/slug';
+import { slug } from '../utils/slug';
 import { rules, isSignedIn } from './access/paper';
 
 export const Paper = list({
@@ -24,7 +24,7 @@ export const Paper = list({
   },
   fields: {
     name: text({ validation: { isRequired: true } }),
-    // slug: slug(),
+    slug: slug(),
     paperCode: text({ validation: { isRequired: true } }),
     year: integer({ validation: { isRequired: true }, isOrderable: true, isFilterable: true }),
     semester: integer({ isFilterable: true }),

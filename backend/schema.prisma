@@ -33,6 +33,7 @@ model User {
 model University {
   id                    String   @id @default(cuid())
   name                  String   @default("")
+  slug                  String   @default("")
   city                  String   @default("")
   state                 String   @default("")
   country               String   @default("")
@@ -54,6 +55,7 @@ model University {
 model Course {
   id             String      @id @default(cuid())
   name           String      @default("")
+  slug           String      @default("")
   status         String?
   courseCode     String      @default("")
   duration       Float
@@ -69,6 +71,7 @@ model Course {
 model Paper {
   id                  String            @id @default(cuid())
   name                String            @default("")
+  slug                String            @default("")
   paperCode           String            @default("")
   year                Int
   semester            Int?

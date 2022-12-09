@@ -2,7 +2,7 @@ import { float, integer, relationship, select, text } from '@keystone-6/core/fie
 import { list } from '@keystone-6/core';
 import { allOperations } from '@keystone-6/core/access';
 
-// import { slug } from '../utils/slug';
+import { slug } from '../utils/slug';
 import { rules, isSignedIn } from './access/course';
 
 export const Course = list({
@@ -23,7 +23,7 @@ export const Course = list({
   },
   fields: {
     name: text({ validation: { isRequired: true }, isFilterable: true }),
-    // slug: slug(),
+    slug: slug(),
     status: select({
       options: [
         { label: 'Published', value: 'published' },

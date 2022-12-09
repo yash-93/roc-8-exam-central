@@ -176,6 +176,7 @@ input PaperRelateToManyForCreateInput {
 type University {
   id: ID!
   name: String
+  slug: String
   city: String
   state: String
   country: String
@@ -196,6 +197,7 @@ input UniversityWhereInput {
   NOT: [UniversityWhereInput!]
   id: IDFilter
   name: StringFilter
+  slug: StringFilter
   city: StringFilter
   state: StringFilter
   country: StringFilter
@@ -241,6 +243,7 @@ input CourseManyRelationFilter {
 input UniversityOrderByInput {
   id: OrderDirection
   name: OrderDirection
+  slug: OrderDirection
   city: OrderDirection
   state: OrderDirection
   country: OrderDirection
@@ -249,6 +252,7 @@ input UniversityOrderByInput {
 
 input UniversityUpdateInput {
   name: String
+  slug: String
   city: String
   state: String
   country: String
@@ -272,6 +276,7 @@ input UniversityUpdateArgs {
 
 input UniversityCreateInput {
   name: String
+  slug: String
   city: String
   state: String
   country: String
@@ -289,6 +294,7 @@ input CourseRelateToManyForCreateInput {
 type Course {
   id: ID!
   name: String
+  slug: String
   status: String
   courseCode: String
   duration: Float
@@ -309,6 +315,7 @@ input CourseWhereInput {
   NOT: [CourseWhereInput!]
   id: IDFilter
   name: StringFilter
+  slug: StringFilter
   status: StringNullableFilter
   courseCode: StringFilter
   duration: FloatFilter
@@ -343,6 +350,7 @@ input IntNullableFilter {
 input CourseOrderByInput {
   id: OrderDirection
   name: OrderDirection
+  slug: OrderDirection
   status: OrderDirection
   courseCode: OrderDirection
   duration: OrderDirection
@@ -352,6 +360,7 @@ input CourseOrderByInput {
 
 input CourseUpdateInput {
   name: String
+  slug: String
   status: String
   courseCode: String
   duration: Float
@@ -374,6 +383,7 @@ input CourseUpdateArgs {
 
 input CourseCreateInput {
   name: String
+  slug: String
   status: String
   courseCode: String
   duration: Float
@@ -391,6 +401,7 @@ input UniversityRelateToOneForCreateInput {
 type Paper {
   id: ID!
   name: String
+  slug: String
   paperCode: String
   year: Int
   semester: Int
@@ -422,6 +433,7 @@ input PaperWhereInput {
   NOT: [PaperWhereInput!]
   id: IDFilter
   name: StringFilter
+  slug: StringFilter
   paperCode: StringFilter
   year: IntFilter
   semester: IntNullableFilter
@@ -449,6 +461,7 @@ input IntFilter {
 input PaperOrderByInput {
   id: OrderDirection
   name: OrderDirection
+  slug: OrderDirection
   paperCode: OrderDirection
   year: OrderDirection
   semester: OrderDirection
@@ -460,6 +473,7 @@ input PaperOrderByInput {
 
 input PaperUpdateInput {
   name: String
+  slug: String
   paperCode: String
   year: Int
   semester: Int
@@ -504,6 +518,7 @@ input PaperUpdateArgs {
 
 input PaperCreateInput {
   name: String
+  slug: String
   paperCode: String
   year: Int
   semester: Int
