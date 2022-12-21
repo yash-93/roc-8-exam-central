@@ -41,6 +41,7 @@ export default withAuth(
     db: {
       provider: 'postgresql',
       url: process.env.DATABASE_URL || '',
+      useMigrations: true,
       onConnect: async () => {
         console.log('CONNECTED TO DB');
       }
@@ -61,7 +62,7 @@ export default withAuth(
       localImages: {
         kind: 'local',
         type: 'image',
-        generateUrl: path => `http://localhost:3000/images${path}`,
+        generateUrl: path => `/images${path}`,
         serverRoute: {
           path: '/images',
         },
@@ -70,7 +71,7 @@ export default withAuth(
       localFiles: {
         kind: 'local',
         type: 'file',
-        generateUrl: path => `http://localhost:3000/files${path}`,
+        generateUrl: path => `/files${path}`,
         serverRoute: {
           path: '/files',
         },
