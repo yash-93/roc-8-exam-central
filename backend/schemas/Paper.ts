@@ -78,11 +78,9 @@ export const Paper = list({
     resolveInput: async ({ operation, context, resolvedData }) => {
       if (resolvedData.original.filename)
         resolvedData.source = {
-          'mode': 'local',
           ...await modifyPdf(resolvedData.original.filename, context.session?.data?.name)
         }
-
-      return resolvedData
+      return resolvedData;
     }
   }
 })
