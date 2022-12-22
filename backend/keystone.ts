@@ -78,5 +78,8 @@ export default withAuth(
         storagePath: 'public/files'
       },
     },
+    graphql:{
+      playground: true
+    },
   })
 );
