@@ -78,8 +78,11 @@ export default withAuth(
         storagePath: 'public/files'
       },
     },
-    graphql:{
-      playground: true
+    graphql: {
+      playground: true,
+      apolloConfig: {
+        introspection: true
+      }
     },
   })
 );
