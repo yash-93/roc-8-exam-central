@@ -1,26 +1,11 @@
 import { float, integer, relationship, select, text } from '@keystone-6/core/fields';
 import { list } from '@keystone-6/core';
-import { allOperations } from '@keystone-6/core/access';
+import { allowAll } from '@keystone-6/core/access';
 
 import { slug } from '../utils/slug';
-import { rules, isSignedIn } from './access/course';
 
 export const Course = list({
-  access: {
-    operation: {
-      ...allOperations(isSignedIn),
-      query: () => true
-    },
-    filter: {
-      query: rules.canReadCourses,
-      // update: rules.papersUpdateFilter
-    },
-    item: {
-      create: isSignedIn,
-      update: rules.canUpdateCourses,
-      delete: rules.canDeleteCourses
-    }
-  },
+  access: allowAll,
   fields: {
     name: text({ validation: { isRequired: true }, isFilterable: true }),
     slug: slug(),

@@ -1,27 +1,12 @@
 import { file, integer, relationship, select, text } from '@keystone-6/core/fields';
 import { list } from '@keystone-6/core';
-import { allOperations } from '@keystone-6/core/access';
+import { allowAll } from '@keystone-6/core/access';
 
 import { modifyPdf } from '../utils/utils';
 import { slug } from '../utils/slug';
-import { rules, isSignedIn } from './access/paper';
 
 export const Paper = list({
-  access: {
-    operation: {
-      ...allOperations(isSignedIn),
-      query: () => true
-    },
-    filter: {
-      query: rules.papersQueryFilter,
-      update: rules.papersUpdateFilter
-    },
-    item: {
-      create: isSignedIn,
-      update: rules.canUpdatePapers,
-      delete: rules.canDeletePapers
-    }
-  },
+  access: allowAll,
   fields: {
     name: text({ validation: { isRequired: true } }),
     slug: slug(),
